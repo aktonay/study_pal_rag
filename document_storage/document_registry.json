@@ -1,0 +1,18 @@
+{
+  "ce0e657fbc6c597778e26d7a9d8cc532": {
+    "original_filename": "English_for_Today_9-10.pdf",
+    "file_hash": "9036e9eac33c643b8d5b3a7c2fb06c50",
+    "file_size": 8627051,
+    "processed_at": "2025-08-06T06:34:59.465279",
+    "total_chunks": 71,
+    "primary_language": "english"
+  },
+  "d58a76b0a5ae7fe01f325df8afa91a5e": {
+    "original_filename": "ewuundergraduate-bulletin-14th-edition-doc-version.pdf",
+    "file_hash": "086792fdca2ada81f805112686288d02",
+    "file_size": 5285700,
+    "processed_at": "2025-08-06T06:37:30.093055",
+    "total_chunks": 337,
+    "primary_language": "english"
+  }
+}
