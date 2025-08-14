@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilingual RAG System | English + বাংলা</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            height: fit-content;
+        }
+
+        .chat-area {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+
+        .upload-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #667eea;
+            background-color: #f7fafc;
+        }
+
+        .upload-area.dragover {
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #a0aec0;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            min-height: 400px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            max-width: 85%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant {
+            background: white;
+            border: 1px solid #e2e8f0;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .message-content {
+            line-height: 1.6;
+        }
+
+        .message-sources {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .source-item {
+            background: #f7fafc;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .source-filename {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .source-score {
+            color: #718096;
+            font-size: 0.8rem;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 60px;
+            max-height: 120px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .example-queries {
+            margin-top: 20px;
+        }
+
+        .example-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .example-item {
+            padding: 10px;
+            background: #f7fafc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .example-item:hover {
+            background: #edf2f7;
+            transform: translateY(-1px);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #48bb78;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: #f56565;
+        }
+
+        .processed-docs {
+            margin-top: 20px;
+        }
+
+        .doc-item {
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .doc-filename {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .doc-details {
+            color: #718096;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .example-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Bilingual RAG System</h1>
+            <p>Upload documents and ask questions in English or Bengali | নথি আপলোড করুন এবং ইংরেজি বা বাংলায় প্রশ্ন করুন</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="section-title">📚 Knowledge Base</div>
+                
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="docs-count">0</div>
+                        <div class="stat-label">Documents</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="chunks-count">0</div>
+                        <div class="stat-label">Text Chunks</div>
+                    </div>
+                </div>
+
+                <!-- File Upload -->
+                <div class="upload-area" onclick="document.getElementById('file-input').click()">
+                    <div class="upload-icon">📄</div>
+                    <p><strong>Click to upload files</strong></p>
+                    <p>or drag and drop here</p>
+                    <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">PDF, DOCX • Max 50MB</p>
+                </div>
+                <input type="file" id="file-input" class="file-input" multiple accept=".pdf,.docx">
+                
+                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 15px;" onclick="uploadFiles()">
+                    <span id="upload-text">Upload Documents</span>
+                    <span id="upload-loading" class="loading" style="display: none;"></span>
+                </button>
+
+                <!-- Actions -->
+                <button class="btn" style="width: 100%; margin-bottom: 10px;" onclick="clearHistory()">
+                    🗑️ Clear Chat History
+                </button>
+                <button class="btn btn-danger" style="width: 100%;" onclick="resetKnowledgeBase()">
+                    ⚠️ Reset Knowledge Base
+                </button>
+
+                <!-- Processed Documents -->
+                <div class="processed-docs">
+                    <div class="section-title">📋 Processed Documents</div>
+                    <div id="docs-list">
+                        <p style="color: #666; font-style: italic;">No documents uploaded yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="chat-area">
+                <div class="section-title">💬 Chat with your Documents</div>
+                
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message assistant">
+                        <div class="message-content">
+                            <p>👋 Hello! I'm your bilingual document assistant.</p>
+                            <p>আমি আপনার দ্বিভাষিক নথি সহায়ক।</p>
+                            <br>
+                            <p><strong>How to use:</strong></p>
+                            <ul>
+                                <li>📁 Upload PDF or DOCX files in the sidebar</li>
+                                <li>❓ Ask questions in English or Bengali</li>
+                                <li>🎯 Get answers based on your documents</li>
+                            </ul>
+                            <br>
+                            <p><strong>ব্যবহারের নিয়ম:</strong></p>
+                            <ul>
+                                <li>📁 সাইডবারে PDF বা DOCX ফাইল আপলোড করুন</li>
+                                <li>❓ ইংরেজি বা বাংলায় প্রশ্ন করুন</li>
+                                <li>🎯 আপনার নথির উপর ভিত্তি করে উত্তর পান</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <textarea 
+                        id="chat-input" 
+                        class="chat-input" 
+                        placeholder="Ask your question in English or Bengali... / আপনার প্রশ্ন করুন ইংরেজি বা বাংলায়..."
+                        onkeydown="handleKeyDown(event)"
+                    ></textarea>
+                    <button class="btn" onclick="sendMessage()" id="send-btn">
+                        Send
+                    </button>
+                </div>
+
+                <!-- Example Queries -->
+                <div class="example-queries">
+                    <div class="section-title">💡 Example Questions</div>
+                    <div class="example-grid">
+                        <div class="example-item" onclick="setQuery('What is the main topic of the document?')">
+                            What is the main topic?
+                        </div>
+                        <div class="example-item" onclick="setQuery('নথিটির মূল বিষয় কী?')">
+                            নথিটির মূল বিষয় কী?
+                        </div>
+                        <div class="example-item" onclick="setQuery('Can you summarize the key points?')">
+                            Summarize key points
+                        </div>
+                        <div class="example-item" onclick="setQuery('মূল পয়েন্টগুলো সংক্ষেপে বলুন')">
+                            মূল পয়েন্টগুলো সংক্ষেপে বলুন
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let isUploading = false;
+        let isSending = false;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            loadDocuments();
+            setupDragAndDrop();
+        });
+
+        // Setup drag and drop
+        function setupDragAndDrop() {
+            const uploadArea = document.querySelector('.upload-area');
+            
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                const fileInput = document.getElementById('file-input');
+                fileInput.files = files;
+                uploadFiles();
+            });
+        }
+
+        // Load system statistics
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                if (data.vector_store) {
+                    document.getElementById('docs-count').textContent = data.processed_documents || 0;
+                    document.getElementById('chunks-count').textContent = data.vector_store.total_documents || 0;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load processed documents
+        async function loadDocuments() {
+            try {
+                const response = await fetch('/api/documents');
+                const data = await response.json();
+                
+                const docsList = document.getElementById('docs-list');
+                
+                if (data.documents && data.documents.length > 0) {
+                    docsList.innerHTML = data.documents.map(doc => `
+                        <div class="doc-item">
+                            <div class="doc-filename">${doc.filename}</div>
+                            <div class="doc-details">
+                                ${doc.total_chunks} chunks • ${doc.primary_language} • 
+                                ${new Date(doc.processed_at).toLocaleDateString()}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    docsList.innerHTML = '<p style="color: #666; font-style: italic;">No documents uploaded yet</p>';
+                }
+            } catch (error) {
+                console.error('Error loading documents:', error);
+            }
+        }
+
+        // Upload files
+        async function uploadFiles() {
+            if (isUploading) return;
+            
+            const fileInput = document.getElementById('file-input');
+            const files = fileInput.files;
+            
+            if (files.length === 0) {
+                showToast('Please select files to upload', 'error');
+                return;
+            }
+
+            isUploading = true;
+            const uploadBtn = document.querySelector('.btn-secondary');
+            const uploadText = document.getElementById('upload-text');
+            const uploadLoading = document.getElementById('upload-loading');
+            
+            uploadText.style.display = 'none';
+            uploadLoading.style.display = 'inline-block';
+            uploadBtn.disabled = true;
+
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append('files', file);
+            }
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (data.results) {
+                    let successCount = 0;
+                    let errorCount = 0;
+                    let alreadyExistsCount = 0;
+                    
+                    data.results.forEach(result => {
+                        if (result.success) {
+                            successCount++;
+                            if (result.already_exists) {
+                                alreadyExistsCount++;
+                            }
+                        } else {
+                            errorCount++;
+                        }
+                    });
+                    
+                    let message = '';
+                    if (successCount > 0) {
+                        message += `✅ ${successCount} files processed successfully`;
+                        if (alreadyExistsCount > 0) {
+                            message += ` (${alreadyExistsCount} already existed)`;
+                        }
+                    }
+                    if (errorCount > 0) {
+                        message += `${message ? '\n' : ''}❌ ${errorCount} files failed`;
+                    }
+                    
+                    showToast(message, errorCount > 0 ? 'error' : 'success');
+                    
+                    // Refresh stats and documents list
+                    loadStats();
+                    loadDocuments();
+                    
+                    // Clear file input
+                    fileInput.value = '';
+                }
+            } catch (error) {
+                showToast('Error uploading files: ' + error.message, 'error');
+            } finally {
+                isUploading = false;
+                uploadText.style.display = 'inline';
+                uploadLoading.style.display = 'none';
+                uploadBtn.disabled = false;
+            }
+        }
+
+        // Send chat message
+        async function sendMessage() {
+            if (isSending) return;
+            
+            const input = document.getElementById('chat-input');
+            const query = input.value.trim();
+            
+            if (!query) {
+                showToast('Please enter a question', 'error');
+                return;
+            }
+
+            isSending = true;
+            const sendBtn = document.getElementById('send-btn');
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="loading"></span>';
+
+            // Add user message to chat
+            addMessage(query, 'user');
+            input.value = '';
+
+            try {
+                const response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: query })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    addMessage(data.answer, 'assistant', data.sources);
+                } else {
+                    addMessage('Sorry, I encountered an error: ' + (data.error || 'Unknown error'), 'assistant');
+                }
+            } catch (error) {
+                addMessage('Sorry, I encountered a network error. Please try again.', 'assistant');
+                console.error('Error:', error);
+            } finally {
+                isSending = false;
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = 'Send';
+            }
+        }
+
+        // Add message to chat
+        function addMessage(content, role, sources = null) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            let messageHTML = `<div class="message-content">${content.replace(/\n/g, '<br>')}</div>`;
+            
+            if (sources && sources.length > 0) {
+                messageHTML += '<div class="message-sources">';
+                messageHTML += '<strong>📖 Sources:</strong>';
+                sources.forEach((source, index) => {
+                    messageHTML += `
+                        <div class="source-item">
+                            <div class="source-filename">${source.metadata.filename}</div>
+                            <div class="source-score">Relevance: ${source.score.toFixed(3)} • Chunk ${source.metadata.chunk_id + 1}/${source.metadata.total_chunks}</div>
+                        </div>
+                    `;
+                });
+                messageHTML += '</div>';
+            }
+            
+            messageDiv.innerHTML = messageHTML;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Set query in input
+        function setQuery(query) {
+            document.getElementById('chat-input').value = query;
+            document.getElementById('chat-input').focus();
+        }
+
+        // Handle Enter key in chat input
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Clear chat history
+        async function clearHistory() {
+            if (!confirm('Are you sure you want to clear the chat history?')) return;
+            
+            try {
+                const response = await fetch('/api/clear-history', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('chat-messages').innerHTML = `
+                        <div class="message assistant">
+                            <div class="message-content">Chat history cleared. How can I help you?</div>
+                        </div>
+                    `;
+                    showToast('Chat history cleared', 'success');
+                }
+            } catch (error) {
+                showToast('Error clearing history', 'error');
+            }
+        }
+
+        // Reset knowledge base
+        async function resetKnowledgeBase() {
+            if (!confirm('⚠️ This will delete ALL uploaded documents and chat history. Are you sure?')) return;
+            
+            try {
+                const response = await fetch('/api/reset-kb', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Reset UI
+                    loadStats();
+                    loadDocuments();
+                    document.getElementById('chat-messages').innerHTML = `
+                        <div class="message assistant">
+                            <div class="message-content">Knowledge base reset. Please upload documents to get started.</div>
+                        </div>
+                    `;
+                    showToast('Knowledge base reset', 'success');
+                }
+            } catch (error) {
+                showToast('Error resetting knowledge base', 'error');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            // Show toast
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Hide toast
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

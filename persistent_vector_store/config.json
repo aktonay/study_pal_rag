@@ -1,0 +1,6 @@
+{
+  "embedding_model": "text-embedding-3-small",
+  "dimension": 1536,
+  "total_documents": 408,
+  "last_updated": "2025-08-06T06:37:50.228527"
+}

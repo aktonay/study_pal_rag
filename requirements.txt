@@ -1,0 +1,35 @@
+# Web framework and CORS
+flask
+flask-cors
+
+# AI/ML libraries
+openai
+
+# Vector database
+faiss-cpu
+
+# Document processing libraries
+PyPDF2
+PyMuPDF
+pdfplumber
+python-docx
+
+# OCR library (replaces pytesseract)
+easyocr
+
+# Environment and configuration
+python-dotenv
+
+# Text processing and tokenization
+tiktoken
+
+# Data processing
+pandas
+numpy
+
+# Web server and utilities
+werkzeug
+gunicorn
+
+# Additional dependencies for document processing
+sentence-transformers
